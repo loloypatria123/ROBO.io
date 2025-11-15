@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "603908914578",
+    "project_id": "robofinal-6694b",
+    "storage_bucket": "robofinal-6694b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:603908914578:android:04593a5e491a18443b954b",
+        "android_client_info": {
+          "package_name": "com.example.robofinal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAHJijOdLAz35TOH5dm7vEXP6HMCC05jHI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
