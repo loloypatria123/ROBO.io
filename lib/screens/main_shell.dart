@@ -26,7 +26,22 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('RoboCleaner DisposeBot – Admin')),
+      appBar: AppBar(
+        title: const Text(
+          'RoboCleaner DisposeBot – Admin',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF22C55E), Color(0xFF0EA5E9)],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+          ),
+        ),
+        elevation: 0,
+      ),
       body: _pages[_index],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _index,
@@ -35,6 +50,11 @@ class _MainShellState extends State<MainShell> {
             _index = i;
           });
         },
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: const Color(0xFF0F172A),
+        selectedItemColor: const Color(0xFF22C55E),
+        unselectedItemColor: Colors.white54,
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.smart_toy_outlined),

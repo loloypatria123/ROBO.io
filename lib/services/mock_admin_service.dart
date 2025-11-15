@@ -33,6 +33,18 @@ class MockAdminService {
     trashFull: false,
     connectionType: ConnectionType.wifi,
     connectionStatus: ConnectionStatus.connected,
+    location: RobotLocation.classroom,
+    cleaningProgress: 0.0,
+    sensorData: SensorData(
+      ultrasonicDistance: 25.5,
+      ultrasonicStatus: SensorStatus.normal,
+      lineDetected: true,
+      lineStatus: SensorStatus.normal,
+      trashLevel: 35,
+      trashStatus: SensorStatus.normal,
+    ),
+    currentSpeed: 0.0,
+    lastMovement: 'Stationary',
   );
 
   final List<LogEntry> _logs = [];
@@ -40,18 +52,55 @@ class MockAdminService {
   final List<Alert> _alerts = [
     Alert(
       id: 'a1',
-      type: AlertType.warning,
-      title: 'Trash almost full',
-      message: 'Dispose bin in Hallway 3 is at 85%.',
-      timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
+      type: AlertType.error,
+      title: 'Trash Container Full',
+      message:
+          'The trash container has reached 100% capacity. Disposal required immediately.',
+      timestamp: DateTime.now().subtract(const Duration(minutes: 2)),
       status: AlertStatus.active,
     ),
     Alert(
       id: 'a2',
+      type: AlertType.error,
+      title: 'Robot Stuck',
+      message:
+          'Robot is stuck near Classroom 305. Manual intervention may be required.',
+      timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
+      status: AlertStatus.active,
+    ),
+    Alert(
+      id: 'a3',
       type: AlertType.info,
-      title: 'Cleaning complete',
-      message: 'Room 101 cleaning cycle finished.',
+      title: 'Cleaning Complete',
+      message:
+          'Successfully completed cleaning of Hallway B. Duration: 45 minutes.',
+      timestamp: DateTime.now().subtract(const Duration(minutes: 15)),
+      status: AlertStatus.acknowledged,
+    ),
+    Alert(
+      id: 'a4',
+      type: AlertType.warning,
+      title: 'Low Battery Alert',
+      message:
+          'Battery level is at 18%. Robot will return to charging station soon.',
+      timestamp: DateTime.now().subtract(const Duration(minutes: 30)),
+      status: AlertStatus.active,
+    ),
+    Alert(
+      id: 'a5',
+      type: AlertType.info,
+      title: 'Disposal Complete',
+      message:
+          'Trash has been successfully disposed at the main disposal unit.',
       timestamp: DateTime.now().subtract(const Duration(hours: 1)),
+      status: AlertStatus.acknowledged,
+    ),
+    Alert(
+      id: 'a6',
+      type: AlertType.info,
+      title: 'Schedule Reminder',
+      message: 'Upcoming cleaning scheduled for Room 101 in 30 minutes.',
+      timestamp: DateTime.now().subtract(const Duration(hours: 2)),
       status: AlertStatus.acknowledged,
     ),
   ];
@@ -99,6 +148,8 @@ class MockAdminService {
 
   void randomizeRobotStatus() {
     final rand = Random();
+    final trashLevel = rand.nextInt(101);
+    final distance = rand.nextDouble() * 100;
     _status = RobotStatus(
       activity: RobotActivity.values[rand.nextInt(RobotActivity.values.length)],
       batteryLevel: rand.nextInt(101),
@@ -109,6 +160,34 @@ class MockAdminService {
       connectionStatus: rand.nextBool()
           ? ConnectionStatus.connected
           : ConnectionStatus.disconnected,
+      location: RobotLocation.values[rand.nextInt(RobotLocation.values.length)],
+      cleaningProgress: rand.nextDouble(),
+      sensorData: SensorData(
+        ultrasonicDistance: distance,
+        ultrasonicStatus: distance < 10
+            ? SensorStatus.warning
+            : distance < 5
+            ? SensorStatus.error
+            : SensorStatus.normal,
+        lineDetected: rand.nextBool(),
+        lineStatus: rand.nextBool()
+            ? SensorStatus.normal
+            : SensorStatus.warning,
+        trashLevel: trashLevel,
+        trashStatus: trashLevel > 80
+            ? SensorStatus.error
+            : trashLevel > 60
+            ? SensorStatus.warning
+            : SensorStatus.normal,
+      ),
+      currentSpeed: rand.nextDouble() * 0.5,
+      lastMovement: [
+        'Forward',
+        'Backward',
+        'Left Turn',
+        'Right Turn',
+        'Stationary',
+      ][rand.nextInt(5)],
     );
   }
 

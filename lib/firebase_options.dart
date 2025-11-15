@@ -85,4 +85,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'robofinal-6694b.firebasestorage.app',
     measurementId: 'G-6E2JKXM23G',
   );
+
 }
