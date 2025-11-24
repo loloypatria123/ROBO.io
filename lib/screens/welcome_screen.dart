@@ -40,9 +40,29 @@ class _WelcomeScreenState extends State<WelcomeScreen>
         curve: Curves.easeInOut,
       );
     } else {
-      Navigator.of(
-        context,
-      ).pushReplacement(MaterialPageRoute(builder: (_) => const LoginScreen()));
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const LoginScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            // Slide up + Fade transition for professional effect
+            return SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 1),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+              child: FadeTransition(opacity: animation, child: child),
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 600),
+        ),
+      );
     }
   }
 
@@ -151,13 +171,36 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   }
 }
 
-// Slide 1: Welcome - Friendly robot entering classroom
-class _Slide1Welcome extends StatelessWidget {
+// Slide 1: Intro & Problem - Clean Sweep Concept
+class _Slide1Welcome extends StatefulWidget {
   final AnimationController animation;
 
   const _Slide1Welcome({required this.animation});
 
   @override
+  State<_Slide1Welcome> createState() => _Slide1WelcomeState();
+}
+
+class _Slide1WelcomeState extends State<_Slide1Welcome>
+    with TickerProviderStateMixin {
+  late AnimationController _fadeController;
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -176,57 +219,113 @@ class _Slide1Welcome extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(height: maxHeight * 0.02),
-                  // Custom Robot Illustration
-                  AnimatedBuilder(
-                    animation: animation,
-                    builder: (context, child) {
-                      return Transform.translate(
-                        offset: Offset(
-                          0,
-                          math.sin(animation.value * 2 * math.pi) * 10,
-                        ),
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: maxWidth * 0.8,
-                            maxHeight: maxHeight * 0.4,
-                          ),
-                          child: _RobotIllustration(
-                            waveAnimation: animation.value,
-                            size: isSmallScreen ? 200 : 280,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  SizedBox(height: maxHeight * 0.04),
-                  Text(
-                    'Welcome to RoboCleaner',
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontSize: isSmallScreen ? 22 : 28,
-                      fontWeight: FontWeight.bold,
+                  SizedBox(height: maxHeight * 0.1),
+                  // Title with Fade-In
+                  FadeTransition(
+                    opacity: Tween<double>(begin: 0, end: 1).animate(
+                      CurvedAnimation(
+                        parent: _fadeController,
+                        curve: const Interval(0.0, 0.5),
+                      ),
                     ),
-                  ),
-                  SizedBox(height: maxHeight * 0.02),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: maxWidth * 0.05),
                     child: Text(
-                      'Your intelligent classroom cleaning assistant with autonomous navigation and smart waste disposal',
+                      'RoboCleaner',
                       textAlign: TextAlign.center,
-                      maxLines: 4,
-                      overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.poppins(
-                        color: Colors.white70,
-                        fontSize: isSmallScreen ? 13 : 15,
-                        height: 1.5,
+                        color: Colors.white,
+                        fontSize: isSmallScreen ? 36 : 48,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
                       ),
                     ),
                   ),
-                  SizedBox(height: maxHeight * 0.02),
+                  SizedBox(height: maxHeight * 0.04),
+                  // Tagline with Fade-In (staggered)
+                  FadeTransition(
+                    opacity: Tween<double>(begin: 0, end: 1).animate(
+                      CurvedAnimation(
+                        parent: _fadeController,
+                        curve: const Interval(0.3, 0.8),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: maxWidth * 0.05,
+                      ),
+                      child: Text(
+                        'The Problem: Classrooms need intelligent, autonomous cleaning',
+                        textAlign: TextAlign.center,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          color: Colors.white70,
+                          fontSize: isSmallScreen ? 14 : 16,
+                          height: 1.6,
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: maxHeight * 0.12),
+                  // Decorative icon with Professional Animation
+                  ScaleTransition(
+                    scale: Tween<double>(begin: 0, end: 1).animate(
+                      CurvedAnimation(
+                        parent: _fadeController,
+                        curve: const Interval(
+                          0.5,
+                          1.0,
+                          curve: Curves.elasticOut,
+                        ),
+                      ),
+                    ),
+                    child: FadeTransition(
+                      opacity: Tween<double>(begin: 0, end: 1).animate(
+                        CurvedAnimation(
+                          parent: _fadeController,
+                          curve: const Interval(0.5, 1.0),
+                        ),
+                      ),
+                      child: AnimatedBuilder(
+                        animation: widget.animation,
+                        builder: (context, child) {
+                          return Transform.rotate(
+                            angle: widget.animation.value * 2 * math.pi * 0.3,
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(
+                                  0xFF22C55E,
+                                ).withValues(alpha: 0.1),
+                                border: Border.all(
+                                  color: const Color(0xFF22C55E).withValues(
+                                    alpha: 0.5 + (widget.animation.value * 0.5),
+                                  ),
+                                  width: 2,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF22C55E).withValues(
+                                      alpha: 0.3 * widget.animation.value,
+                                    ),
+                                    blurRadius: 20,
+                                    spreadRadius: 5,
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                Icons.cleaning_services,
+                                color: const Color(0xFF22C55E),
+                                size: isSmallScreen ? 48 : 64,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: maxHeight * 0.15),
                 ],
               ),
             ),
@@ -237,13 +336,43 @@ class _Slide1Welcome extends StatelessWidget {
   }
 }
 
-// Slide 2: Smart Cleaning Automation
-class _Slide2SmartCleaning extends StatelessWidget {
+// Slide 2: How it Works - Draw Path Animation
+class _Slide2SmartCleaning extends StatefulWidget {
   final AnimationController animation;
 
   const _Slide2SmartCleaning({required this.animation});
 
   @override
+  State<_Slide2SmartCleaning> createState() => _Slide2SmartCleaningState();
+}
+
+class _Slide2SmartCleaningState extends State<_Slide2SmartCleaning>
+    with TickerProviderStateMixin {
+  late AnimationController _drawController;
+  late AnimationController _textController;
+
+  @override
+  void initState() {
+    super.initState();
+    _drawController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..forward();
+
+    _textController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _drawController.dispose();
+    _textController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -263,45 +392,77 @@ class _Slide2SmartCleaning extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(height: maxHeight * 0.02),
-                  AnimatedBuilder(
-                    animation: animation,
-                    builder: (context, child) {
-                      return ConstrainedBox(
+                  // Draw Path Animation with Professional Effects
+                  ScaleTransition(
+                    scale: Tween<double>(begin: 0.8, end: 1).animate(
+                      CurvedAnimation(
+                        parent: _drawController,
+                        curve: const Interval(0.0, 0.3, curve: Curves.easeOut),
+                      ),
+                    ),
+                    child: FadeTransition(
+                      opacity: Tween<double>(begin: 0, end: 1).animate(
+                        CurvedAnimation(
+                          parent: _drawController,
+                          curve: const Interval(0.0, 0.2),
+                        ),
+                      ),
+                      child: ConstrainedBox(
                         constraints: BoxConstraints(
                           maxWidth: maxWidth * 0.85,
                           maxHeight: maxHeight * 0.4,
                         ),
-                        child: _CleaningIllustration(
-                          progress: animation.value,
+                        child: _DrawPathIllustration(
+                          progress: _drawController.value,
                           size: isSmallScreen ? 240 : 300,
                         ),
-                      );
-                    },
+                      ),
+                    ),
                   ),
                   SizedBox(height: maxHeight * 0.04),
-                  Text(
-                    'Smart Cleaning Automation',
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontSize: isSmallScreen ? 22 : 28,
-                      fontWeight: FontWeight.bold,
+                  // Title with Fade-In
+                  FadeTransition(
+                    opacity: Tween<double>(begin: 0, end: 1).animate(
+                      CurvedAnimation(
+                        parent: _textController,
+                        curve: const Interval(0.3, 1.0),
+                      ),
+                    ),
+                    child: Text(
+                      'Smart Navigation',
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: isSmallScreen ? 22 : 28,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   SizedBox(height: maxHeight * 0.02),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: maxWidth * 0.05),
-                    child: Text(
-                      'Follows optimized paths, collects waste efficiently, and adapts to classroom layouts with intelligent sensors',
-                      textAlign: TextAlign.center,
-                      maxLines: 4,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.poppins(
-                        color: Colors.white70,
-                        fontSize: isSmallScreen ? 13 : 15,
-                        height: 1.5,
+                  // Description with Fade-In
+                  FadeTransition(
+                    opacity: Tween<double>(begin: 0, end: 1).animate(
+                      CurvedAnimation(
+                        parent: _textController,
+                        curve: const Interval(0.5, 1.0),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: maxWidth * 0.05,
+                      ),
+                      child: Text(
+                        'Follows optimized paths, navigates between desks efficiently, and adapts to any classroom layout',
+                        textAlign: TextAlign.center,
+                        maxLines: 4,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          color: Colors.white70,
+                          fontSize: isSmallScreen ? 13 : 15,
+                          height: 1.5,
+                        ),
                       ),
                     ),
                   ),
@@ -316,90 +477,34 @@ class _Slide2SmartCleaning extends StatelessWidget {
   }
 }
 
-// Slide 3: Real-Time Updates
-class _Slide3RealTimeUpdates extends StatelessWidget {
+// Slide 3: Features & Benefits - Curtain Transition with Staggered Cards
+class _Slide3RealTimeUpdates extends StatefulWidget {
   final AnimationController animation;
 
   const _Slide3RealTimeUpdates({required this.animation});
 
   @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final maxWidth = constraints.maxWidth;
-        final maxHeight = constraints.maxHeight;
-        final isSmallScreen = maxWidth < 400 || maxHeight < 600;
-
-        return SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: maxHeight),
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: maxWidth * 0.08,
-                vertical: maxHeight * 0.04,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(height: maxHeight * 0.02),
-                  AnimatedBuilder(
-                    animation: animation,
-                    builder: (context, child) {
-                      return ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: maxWidth * 0.85,
-                          maxHeight: maxHeight * 0.45,
-                        ),
-                        child: _NotificationIllustration(
-                          pulse: animation.value,
-                          size: isSmallScreen ? 240 : 300,
-                        ),
-                      );
-                    },
-                  ),
-                  SizedBox(height: maxHeight * 0.04),
-                  Text(
-                    'Real-Time Updates',
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontSize: isSmallScreen ? 22 : 28,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: maxHeight * 0.02),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: maxWidth * 0.05),
-                    child: Text(
-                      'Get instant notifications about cleaning status, trash levels, battery life, and maintenance alerts',
-                      textAlign: TextAlign.center,
-                      maxLines: 4,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.poppins(
-                        color: Colors.white70,
-                        fontSize: isSmallScreen ? 13 : 15,
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: maxHeight * 0.02),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
+  State<_Slide3RealTimeUpdates> createState() => _Slide3RealTimeUpdatesState();
 }
 
-// Slide 4: Enable Permissions
-class _Slide4Permissions extends StatelessWidget {
-  final AnimationController animation;
+class _Slide3RealTimeUpdatesState extends State<_Slide3RealTimeUpdates>
+    with TickerProviderStateMixin {
+  late AnimationController _cardController;
 
-  const _Slide4Permissions({required this.animation});
+  @override
+  void initState() {
+    super.initState();
+    _cardController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _cardController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -421,48 +526,19 @@ class _Slide4Permissions extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(height: maxHeight * 0.02),
-                  AnimatedBuilder(
-                    animation: animation,
-                    builder: (context, child) {
-                      return ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: maxWidth * 0.85,
-                          maxHeight: maxHeight * 0.45,
-                        ),
-                        child: _PermissionsIllustration(
-                          glow: animation.value,
-                          size: isSmallScreen ? 240 : 300,
-                        ),
-                      );
-                    },
-                  ),
-                  SizedBox(height: maxHeight * 0.04),
+                  // Title
                   Text(
-                    'Enable Permissions',
+                    'Key Features',
                     textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontSize: isSmallScreen ? 22 : 28,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: maxHeight * 0.02),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: maxWidth * 0.05),
-                    child: Text(
-                      'Allow WiFi, Bluetooth, and notifications to seamlessly control your RoboCleaner and receive updates',
-                      textAlign: TextAlign.center,
-                      maxLines: 4,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.poppins(
-                        color: Colors.white70,
-                        fontSize: isSmallScreen ? 13 : 15,
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
+                  SizedBox(height: maxHeight * 0.04),
+                  // Feature Cards with Staggered Slide-In
+                  ..._buildFeatureCards(maxWidth, maxHeight, isSmallScreen),
                   SizedBox(height: maxHeight * 0.02),
                 ],
               ),
@@ -471,6 +547,374 @@ class _Slide4Permissions extends StatelessWidget {
         );
       },
     );
+  }
+
+  List<Widget> _buildFeatureCards(
+    double maxWidth,
+    double maxHeight,
+    bool isSmallScreen,
+  ) {
+    final features = [
+      {'icon': Icons.speed, 'title': 'Automatic', 'desc': 'Runs on schedule'},
+      {
+        'icon': Icons.eco,
+        'title': 'Eco-Friendly',
+        'desc': 'Sustainable cleaning',
+      },
+      {'icon': Icons.volume_off, 'title': 'Quiet', 'desc': 'Minimal noise'},
+    ];
+
+    return features.asMap().entries.map((entry) {
+      final index = entry.key;
+      final feature = entry.value;
+
+      return SlideTransition(
+        position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
+            .animate(
+              CurvedAnimation(
+                parent: _cardController,
+                curve: Interval(
+                  0.1 + (index * 0.15),
+                  0.6 + (index * 0.15),
+                  curve: Curves.easeOutCubic,
+                ),
+              ),
+            ),
+        child: FadeTransition(
+          opacity: Tween<double>(begin: 0, end: 1).animate(
+            CurvedAnimation(
+              parent: _cardController,
+              curve: Interval(0.1 + (index * 0.15), 0.6 + (index * 0.15)),
+            ),
+          ),
+          child: Container(
+            margin: EdgeInsets.only(bottom: maxHeight * 0.02),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+            ),
+            child: Row(
+              children: [
+                AnimatedBuilder(
+                  animation: _cardController,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale:
+                          0.8 +
+                          (0.2 *
+                              (0.5 +
+                                  math.sin(
+                                        _cardController.value * 2 * math.pi,
+                                      ) *
+                                      0.5)),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF22C55E).withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF22C55E).withValues(
+                                alpha:
+                                    0.3 *
+                                    (0.5 +
+                                        math.sin(
+                                              _cardController.value *
+                                                  2 *
+                                                  math.pi,
+                                            ) *
+                                            0.5),
+                              ),
+                              blurRadius: 12,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          feature['icon'] as IconData,
+                          color: const Color(0xFF22C55E),
+                          size: 24,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        feature['title'] as String,
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: isSmallScreen ? 14 : 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        feature['desc'] as String,
+                        style: GoogleFonts.poppins(
+                          color: Colors.white70,
+                          fontSize: isSmallScreen ? 12 : 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }).toList();
+  }
+}
+
+// Slide 4: Call to Action - Spring Button & Gradient Transition
+class _Slide4Permissions extends StatefulWidget {
+  final AnimationController animation;
+
+  const _Slide4Permissions({required this.animation});
+
+  @override
+  State<_Slide4Permissions> createState() => _Slide4PermissionsState();
+}
+
+class _Slide4PermissionsState extends State<_Slide4Permissions>
+    with TickerProviderStateMixin {
+  late AnimationController _buttonController;
+
+  @override
+  void initState() {
+    super.initState();
+    _buttonController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _buttonController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxWidth = constraints.maxWidth;
+        final maxHeight = constraints.maxHeight;
+        final isSmallScreen = maxWidth < 400 || maxHeight < 600;
+
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: maxHeight),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: maxWidth * 0.08,
+                vertical: maxHeight * 0.04,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(height: maxHeight * 0.05),
+                  // Title and Description
+                  Text(
+                    'Ready to Get Started?',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: isSmallScreen ? 24 : 32,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: maxHeight * 0.02),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: maxWidth * 0.05),
+                    child: Text(
+                      'Enable WiFi, Bluetooth, and notifications for seamless control',
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        color: Colors.white70,
+                        fontSize: isSmallScreen ? 13 : 15,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: maxHeight * 0.08),
+                  // Robot graphic with Professional Animation
+                  ScaleTransition(
+                    scale: Tween<double>(begin: 0, end: 1).animate(
+                      CurvedAnimation(
+                        parent: _buttonController,
+                        curve: const Interval(
+                          0.0,
+                          0.5,
+                          curve: Curves.elasticOut,
+                        ),
+                      ),
+                    ),
+                    child: AnimatedBuilder(
+                      animation: _buttonController,
+                      builder: (context, child) {
+                        return Transform.translate(
+                          offset: Offset(
+                            0,
+                            math.sin(_buttonController.value * 2 * math.pi) * 8,
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: const Color(
+                                0xFF22C55E,
+                              ).withValues(alpha: 0.1),
+                              border: Border.all(
+                                color: const Color(0xFF22C55E).withValues(
+                                  alpha:
+                                      0.4 +
+                                      (0.3 *
+                                          (0.5 +
+                                              math.sin(
+                                                    _buttonController.value *
+                                                        2 *
+                                                        math.pi,
+                                                  ) *
+                                                  0.5)),
+                                ),
+                                width: 2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF22C55E).withValues(
+                                    alpha:
+                                        0.2 *
+                                        (0.5 +
+                                            math.sin(
+                                                  _buttonController.value *
+                                                      2 *
+                                                      math.pi,
+                                                ) *
+                                                0.5),
+                                  ),
+                                  blurRadius: 24,
+                                  spreadRadius: 4,
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              Icons.smart_toy,
+                              color: const Color(0xFF22C55E),
+                              size: isSmallScreen ? 60 : 80,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  SizedBox(height: maxHeight * 0.08),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+// Draw Path Illustration - Robot navigation with animated paths
+class _DrawPathIllustration extends StatelessWidget {
+  final double progress;
+  final double size;
+
+  const _DrawPathIllustration({required this.progress, this.size = 300});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _PathDrawPainter(progress: progress),
+        size: Size(size, size),
+      ),
+    );
+  }
+}
+
+// Path Draw Painter - draws robot and navigation paths
+class _PathDrawPainter extends CustomPainter {
+  final double progress;
+
+  _PathDrawPainter({required this.progress});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final centerX = size.width / 2;
+    final centerY = size.height / 2;
+
+    // Draw desks (simple rectangles)
+    final deskPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.2)
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    canvas.drawRect(Rect.fromLTWH(20, 30, 40, 30), deskPaint);
+    canvas.drawRect(Rect.fromLTWH(size.width - 60, 30, 40, 30), deskPaint);
+    canvas.drawRect(Rect.fromLTWH(20, size.height - 60, 40, 30), deskPaint);
+
+    // Draw animated path
+    final pathPaint = Paint()
+      ..color = const Color(0xFF22C55E).withValues(alpha: progress * 0.8)
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final path = Path();
+    path.moveTo(centerX, centerY);
+
+    // Draw path segments based on progress
+    if (progress > 0.2) {
+      path.lineTo(40, 45);
+    }
+    if (progress > 0.4) {
+      path.lineTo(size.width - 40, 45);
+    }
+    if (progress > 0.6) {
+      path.lineTo(size.width - 40, size.height - 45);
+    }
+    if (progress > 0.8) {
+      path.lineTo(40, size.height - 45);
+    }
+
+    canvas.drawPath(path, pathPaint);
+
+    // Draw robot at center
+    final robotPaint = Paint()
+      ..color = const Color(0xFF0EA5E9)
+      ..style = PaintingStyle.fill;
+
+    canvas.drawCircle(Offset(centerX, centerY), 12, robotPaint);
+
+    // Draw robot outline
+    final outlinePaint = Paint()
+      ..color = const Color(0xFF22C55E)
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    canvas.drawCircle(Offset(centerX, centerY), 12, outlinePaint);
+  }
+
+  @override
+  bool shouldRepaint(_PathDrawPainter oldDelegate) {
+    return oldDelegate.progress != progress;
   }
 }
 
@@ -863,7 +1307,10 @@ class _Wheel extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: const Color(0xFF0EA5E9),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.5), width: 2),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.5),
+          width: 2,
+        ),
       ),
     );
   }
@@ -962,7 +1409,9 @@ class _TrashIndicator extends StatelessWidget {
       ),
       child: Icon(
         Icons.delete_outline,
-        color: filled ? const Color(0xFF22C55E) : Colors.white.withValues(alpha: 0.5),
+        color: filled
+            ? const Color(0xFF22C55E)
+            : Colors.white.withValues(alpha: 0.5),
         size: 24,
       ),
     );
@@ -1141,7 +1590,9 @@ class _PermissionIcon extends StatelessWidget {
             borderRadius: BorderRadius.circular(12 * scale),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF22C55E).withValues(alpha: 0.3 + glow * 0.4),
+                color: const Color(
+                  0xFF22C55E,
+                ).withValues(alpha: 0.3 + glow * 0.4),
                 blurRadius: (12 + glow * 8) * scale,
                 spreadRadius: 2 * scale,
               ),

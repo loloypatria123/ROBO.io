@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:robofinal/models/log_entry.dart';
@@ -11,14 +12,33 @@ class LogsScreen extends StatefulWidget {
   State<LogsScreen> createState() => _LogsScreenState();
 }
 
-class _LogsScreenState extends State<LogsScreen> {
+class _LogsScreenState extends State<LogsScreen> with TickerProviderStateMixin {
   late List<LogEntry> _logs;
   LogType? _selectedFilter;
+  late AnimationController _fadeController;
+  late AnimationController _slideController;
 
   @override
   void initState() {
     super.initState();
     _logs = MockAdminService.instance.getLogs();
+
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    )..forward();
+
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    _slideController.dispose();
+    super.dispose();
   }
 
   List<LogEntry> get _filteredLogs {
@@ -49,43 +69,98 @@ class _LogsScreenState extends State<LogsScreen> {
         child: _filteredLogs.isEmpty
             ? _buildEmptyState()
             : ListView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 24,
+                ),
                 children: [
-                  // Header
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Activity Logs',
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
+                  // Header with Fade Animation
+                  FadeTransition(
+                    opacity: _fadeController,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Activity Logs',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 32,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.5,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Track all robot activities and events',
-                        style: GoogleFonts.poppins(
-                          color: Colors.white70,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
+                        const SizedBox(height: 8),
+                        Text(
+                          'Track all robot activities and events',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: 0.3,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 28),
 
-                  // Filter Chips
-                  _buildFilterChips(),
-                  const SizedBox(height: 20),
+                  // Filter Chips with Slide Animation
+                  SlideTransition(
+                    position:
+                        Tween<Offset>(
+                          begin: const Offset(0, 0.3),
+                          end: Offset.zero,
+                        ).animate(
+                          CurvedAnimation(
+                            parent: _slideController,
+                            curve: Curves.easeOutCubic,
+                          ),
+                        ),
+                    child: _buildFilterChips(),
+                  ),
+                  const SizedBox(height: 28),
 
-                  // Log Statistics
-                  _buildLogStats(),
-                  const SizedBox(height: 20),
+                  // Log Statistics with Slide Animation
+                  SlideTransition(
+                    position:
+                        Tween<Offset>(
+                          begin: const Offset(0, 0.3),
+                          end: Offset.zero,
+                        ).animate(
+                          CurvedAnimation(
+                            parent: _slideController,
+                            curve: Curves.easeOutCubic,
+                          ),
+                        ),
+                    child: _buildLogStats(),
+                  ),
+                  const SizedBox(height: 28),
 
-                  // Logs List
+                  // Logs List Header
+                  SlideTransition(
+                    position:
+                        Tween<Offset>(
+                          begin: const Offset(0, 0.3),
+                          end: Offset.zero,
+                        ).animate(
+                          CurvedAnimation(
+                            parent: _slideController,
+                            curve: Curves.easeOutCubic,
+                          ),
+                        ),
+                    child: Text(
+                      'Recent Activities',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Logs List with Slide Animation
                   ..._filteredLogs.asMap().entries.map((entry) {
                     final index = entry.key;
                     final log = entry.value;
@@ -93,12 +168,24 @@ class _LogsScreenState extends State<LogsScreen> {
 
                     return Column(
                       children: [
-                        _buildLogCard(log, formatter),
+                        SlideTransition(
+                          position:
+                              Tween<Offset>(
+                                begin: const Offset(0, 0.3),
+                                end: Offset.zero,
+                              ).animate(
+                                CurvedAnimation(
+                                  parent: _slideController,
+                                  curve: Curves.easeOutCubic,
+                                ),
+                              ),
+                          child: _buildLogCard(log, formatter),
+                        ),
                         if (!isLast) const SizedBox(height: 12),
                       ],
                     );
                   }),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                 ],
               ),
       ),
@@ -107,41 +194,49 @@ class _LogsScreenState extends State<LogsScreen> {
 
   Widget _buildEmptyState() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+      child: FadeTransition(
+        opacity: _fadeController,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.white.withValues(alpha: 0.1),
+                    Colors.white.withValues(alpha: 0.05),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+              ),
+              child: Icon(
+                Icons.history_outlined,
+                size: 64,
+                color: Colors.white.withValues(alpha: 0.3),
+              ),
             ),
-            child: Icon(
-              Icons.history_outlined,
-              size: 64,
-              color: Colors.white.withValues(alpha: 0.3),
+            const SizedBox(height: 24),
+            Text(
+              'No Logs Found',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'No logs found',
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+            const SizedBox(height: 8),
+            Text(
+              'Activity logs will appear here',
+              style: GoogleFonts.poppins(
+                color: Colors.white.withValues(alpha: 0.6),
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Activity logs will appear here',
-            style: GoogleFonts.poppins(
-              color: Colors.white70,
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -160,7 +255,7 @@ class _LogsScreenState extends State<LogsScreen> {
               });
             },
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
           _buildFilterChip(
             label: 'Cleaning',
             isSelected: _selectedFilter == LogType.cleaning,
@@ -170,7 +265,7 @@ class _LogsScreenState extends State<LogsScreen> {
               });
             },
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
           _buildFilterChip(
             label: 'Disposal',
             isSelected: _selectedFilter == LogType.disposal,
@@ -180,7 +275,7 @@ class _LogsScreenState extends State<LogsScreen> {
               });
             },
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
           _buildFilterChip(
             label: 'Errors',
             isSelected: _selectedFilter == LogType.error,
@@ -203,16 +298,16 @@ class _LogsScreenState extends State<LogsScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           gradient: isSelected
               ? const LinearGradient(
-                  colors: [Color(0xFF22C55E), Color(0xFF0EA5E9)],
+                  colors: [Color(0xFF22C55E), Color(0xFF16A34A)],
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 )
               : null,
-          color: isSelected ? null : Colors.white.withValues(alpha: 0.1),
+          color: isSelected ? null : Colors.white.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
@@ -255,7 +350,7 @@ class _LogsScreenState extends State<LogsScreen> {
             icon: Icons.delete_sweep,
             label: 'Disposal',
             count: disposalLogs,
-            color: const Color(0xFF0EA5E9),
+            color: const Color(0xFF8B5CF6),
           ),
         ),
         const SizedBox(width: 12),
@@ -278,47 +373,39 @@ class _LogsScreenState extends State<LogsScreen> {
     required Color color,
   }) {
     return Container(
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.white.withValues(alpha: 0.1),
-            Colors.white.withValues(alpha: 0.05),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: Colors.white.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
-          width: 1.5,
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
       ),
-      padding: const EdgeInsets.all(12),
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(8),
+              gradient: LinearGradient(
+                colors: [color, color.withValues(alpha: 0.6)],
+              ),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: Colors.white, size: 24),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Text(
-            count.toString(),
+            '$count',
             style: GoogleFonts.poppins(
               color: color,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             label,
             style: GoogleFonts.poppins(
-              color: Colors.white70,
-              fontSize: 11,
+              color: Colors.white.withValues(alpha: 0.7),
+              fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -328,31 +415,16 @@ class _LogsScreenState extends State<LogsScreen> {
   }
 
   Widget _buildLogCard(LogEntry log, DateFormat formatter) {
-    final color = _getLogColor(log.type);
-    final icon = _getLogIcon(log.type);
-    final typeLabel = _getLogTypeLabel(log.type);
+    final logColor = _getLogColor(log.type);
+    final logIcon = _getLogIcon(log.type);
 
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.white.withValues(alpha: 0.1),
-            Colors.white.withValues(alpha: 0.05),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.1),
-            blurRadius: 12,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
       padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -361,10 +433,12 @@ class _LogsScreenState extends State<LogsScreen> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(10),
+                  gradient: LinearGradient(
+                    colors: [logColor, logColor.withValues(alpha: 0.6)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, color: color, size: 22),
+                child: Icon(logIcon, color: Colors.white, size: 24),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -377,7 +451,7 @@ class _LogsScreenState extends State<LogsScreen> {
                         color: Colors.white,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        letterSpacing: 0.3,
+                        letterSpacing: -0.2,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -386,7 +460,7 @@ class _LogsScreenState extends State<LogsScreen> {
                     Text(
                       formatter.format(log.timestamp),
                       style: GoogleFonts.poppins(
-                        color: Colors.white70,
+                        color: Colors.white.withValues(alpha: 0.5),
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
                       ),
@@ -400,64 +474,21 @@ class _LogsScreenState extends State<LogsScreen> {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: color.withValues(alpha: 0.5)),
+                  color: logColor.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: logColor.withValues(alpha: 0.5)),
                 ),
                 child: Text(
-                  typeLabel,
+                  _getLogTypeLabel(log.type),
                   style: GoogleFonts.poppins(
-                    color: color,
+                    color: logColor,
+                    fontWeight: FontWeight.w600,
                     fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.3,
                   ),
                 ),
               ),
             ],
           ),
-          if (log.classroom != null) ...[
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Icon(
-                  Icons.location_on_outlined,
-                  color: Colors.white.withValues(alpha: 0.5),
-                  size: 16,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Location: ${log.classroom}',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white70,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
-            ),
-          ],
-          if (log.duration != null) ...[
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(
-                  Icons.schedule,
-                  color: Colors.white.withValues(alpha: 0.5),
-                  size: 16,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Duration: ${_formatDuration(log.duration!)}',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white70,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
-            ),
-          ],
         ],
       ),
     );
@@ -468,7 +499,7 @@ class _LogsScreenState extends State<LogsScreen> {
       case LogType.cleaning:
         return const Color(0xFF22C55E);
       case LogType.disposal:
-        return const Color(0xFF0EA5E9);
+        return const Color(0xFF8B5CF6);
       case LogType.error:
         return const Color(0xFFEF4444);
     }
@@ -494,14 +525,5 @@ class _LogsScreenState extends State<LogsScreen> {
       case LogType.error:
         return 'ERROR';
     }
-  }
-
-  String _formatDuration(Duration duration) {
-    final minutes = duration.inMinutes;
-    final seconds = duration.inSeconds % 60;
-    if (minutes > 0) {
-      return '$minutes min ${seconds}s';
-    }
-    return '${duration.inSeconds}s';
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:robofinal/models/cleaning_schedule.dart';
 import 'package:robofinal/services/mock_admin_service.dart';
 
@@ -10,10 +12,34 @@ class SchedulesScreen extends StatefulWidget {
   State<SchedulesScreen> createState() => _SchedulesScreenState();
 }
 
-class _SchedulesScreenState extends State<SchedulesScreen> {
+class _SchedulesScreenState extends State<SchedulesScreen>
+    with TickerProviderStateMixin {
   final _dateFormat = DateFormat('MMM dd, yyyy');
   final _timeFormat = DateFormat('HH:mm');
   bool _autoCleaningEnabled = true;
+  late AnimationController _fadeController;
+  late AnimationController _slideController;
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    )..forward();
+
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    _slideController.dispose();
+    super.dispose();
+  }
 
   void _openForm({CleaningSchedule? schedule}) async {
     final result = await showDialog<CleaningSchedule>(
@@ -38,20 +64,27 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF0F172A),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
+        title: Text(
           'Delete Schedule',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
         ),
-        content: const Text(
+        content: Text(
           'Are you sure you want to delete this schedule?',
-          style: TextStyle(color: Colors.white70),
+          style: GoogleFonts.poppins(color: Colors.white70, fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Cancel',
-              style: TextStyle(color: Colors.white70),
+              style: GoogleFonts.poppins(
+                color: Colors.white70,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           ElevatedButton(
@@ -67,7 +100,10 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text('Delete'),
+            child: Text(
+              'Delete',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),
@@ -87,197 +123,288 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
             .toList()
           ..sort((a, b) => a.startTime.compareTo(b.startTime));
 
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF020617), Color(0xFF0F172A), Color(0xFF0EA5E9)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF020617), Color(0xFF0F172A), Color(0xFF0EA5E9)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        child: Column(
+      ),
+      child: RefreshIndicator(
+        onRefresh: () async {
+          setState(() {});
+        },
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           children: [
-            // Header Section
-            Padding(
-              padding: const EdgeInsets.all(16),
+            // Header with Fade Animation
+            FadeTransition(
+              opacity: _fadeController,
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
+                  Text(
+                    'Schedules',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 32,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Manage and create cleaning schedules',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            // Auto Cleaning Toggle with Slide Animation
+            SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 0.3),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: _slideController,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+              child: _buildGlassCard(
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            _autoCleaningEnabled
+                                ? const Color(0xFF22C55E)
+                                : Colors.white.withValues(alpha: 0.3),
+                            _autoCleaningEnabled
+                                ? const Color(0xFF16A34A)
+                                : Colors.white.withValues(alpha: 0.2),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.auto_mode,
+                        color: _autoCleaningEnabled
+                            ? Colors.white
+                            : Colors.white.withValues(alpha: 0.5),
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Auto Cleaning Mode',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                          Text(
+                            _autoCleaningEnabled
+                                ? 'Enabled - Robot will clean automatically'
+                                : 'Disabled - Manual control only',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white.withValues(alpha: 0.6),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Switch(
+                      value: _autoCleaningEnabled,
+                      onChanged: (value) {
+                        setState(() {
+                          _autoCleaningEnabled = value;
+                        });
+                      },
+                      activeThumbColor: const Color(0xFF22C55E),
+                      activeTrackColor: const Color(
+                        0xFF22C55E,
+                      ).withValues(alpha: 0.3),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 28),
+
+            // Upcoming Tasks Summary with Slide Animation
+            if (upcomingSchedules.isNotEmpty)
+              SlideTransition(
+                position:
+                    Tween<Offset>(
+                      begin: const Offset(0, 0.3),
+                      end: Offset.zero,
+                    ).animate(
+                      CurvedAnimation(
+                        parent: _slideController,
+                        curve: Curves.easeOutCubic,
+                      ),
+                    ),
+                child: _buildGlassCard(
+                  child: Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [Color(0xFF22C55E), Color(0xFF0EA5E9)],
+                            colors: [Color(0xFF38BDF8), Color(0xFF0EA5E9)],
                           ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(
-                          Icons.schedule,
+                          Icons.upcoming,
                           color: Colors.white,
-                          size: 24,
+                          size: 28,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 16),
                       Expanded(
-                        child: Text(
-                          'Cleaning Schedules',
-                          style: Theme.of(context).textTheme.titleLarge
-                              ?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Upcoming Tasks',
+                              style: GoogleFonts.poppins(
+                                color: Colors.white70,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
                               ),
+                            ),
+                            Text(
+                              '${upcomingSchedules.length} scheduled',
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
                         ),
+                      ),
+                      const Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colors.white54,
+                        size: 16,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  // Auto Cleaning Toggle
-                  _buildGlassCard(
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: _autoCleaningEnabled
-                                ? const Color(0xFF22C55E).withValues(alpha: 0.2)
-                                : Colors.white.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            Icons.auto_mode,
-                            color: _autoCleaningEnabled
-                                ? const Color(0xFF22C55E)
-                                : Colors.white.withValues(alpha: 0.54),
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Auto Cleaning',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                _autoCleaningEnabled ? 'Enabled' : 'Disabled',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Switch(
-                          value: _autoCleaningEnabled,
-                          onChanged: (value) {
-                            setState(() {
-                              _autoCleaningEnabled = value;
-                            });
-                          },
-                          activeThumbColor: const Color(0xFF22C55E),
-                          activeTrackColor: const Color(
-                            0xFF22C55E,
-                          ).withValues(alpha: 0.3),
-                        ),
-                      ],
+                ),
+              ),
+            if (upcomingSchedules.isNotEmpty) const SizedBox(height: 28),
+
+            // Add Schedule Button with Slide Animation
+            SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 0.3),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: _slideController,
+                      curve: Curves.easeOutCubic,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  // Upcoming Tasks Summary
-                  if (upcomingSchedules.isNotEmpty)
-                    _buildGlassCard(
+              child: SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: () => _openForm(),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                  ),
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF22C55E), Color(0xFF16A34A)],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Center(
                       child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF38BDF8), Color(0xFF0EA5E9)],
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.upcoming,
-                              color: Colors.white,
-                              size: 20,
-                            ),
+                          const Icon(
+                            Icons.add_circle_outline,
+                            color: Colors.white,
+                            size: 24,
                           ),
                           const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Upcoming Tasks',
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                                Text(
-                                  '${upcomingSchedules.length} scheduled',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
+                          Text(
+                            'Create New Schedule',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                              letterSpacing: 0.3,
                             ),
-                          ),
-                          const Icon(
-                            Icons.arrow_forward_ios,
-                            color: Colors.white54,
-                            size: 16,
                           ),
                         ],
                       ),
                     ),
-                ],
+                  ),
+                ),
               ),
             ),
-            // Schedules List
-            Expanded(
-              child: schedules.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.event_busy,
-                            size: 64,
-                            color: Colors.white.withValues(alpha: 0.3),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No schedules yet',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.5),
-                              fontSize: 16,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Tap the + button to add a schedule',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.3),
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
+            const SizedBox(height: 28),
+
+            // Schedules List with Slide Animation
+            if (schedules.isNotEmpty)
+              SlideTransition(
+                position:
+                    Tween<Offset>(
+                      begin: const Offset(0, 0.3),
+                      end: Offset.zero,
+                    ).animate(
+                      CurvedAnimation(
+                        parent: _slideController,
+                        curve: Curves.easeOutCubic,
                       ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                    ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'All Schedules',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
                       itemCount: schedules.length,
                       itemBuilder: (context, index) {
                         final schedule = schedules[index];
@@ -287,30 +414,73 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                         );
                       },
                     ),
-            ),
+                  ],
+                ),
+              )
+            else
+              SlideTransition(
+                position:
+                    Tween<Offset>(
+                      begin: const Offset(0, 0.3),
+                      end: Offset.zero,
+                    ).animate(
+                      CurvedAnimation(
+                        parent: _slideController,
+                        curve: Curves.easeOutCubic,
+                      ),
+                    ),
+                child: _buildGlassCard(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.schedule_outlined,
+                            color: Colors.white.withValues(alpha: 0.5),
+                            size: 48,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No Schedules Yet',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white.withValues(alpha: 0.7),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            'Create your first cleaning schedule',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white.withValues(alpha: 0.5),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 24),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _openForm(),
-        backgroundColor: const Color(0xFF22C55E),
-        child: const Icon(Icons.add, size: 28),
       ),
     );
   }
 
   Widget _buildGlassCard({required Widget child}) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -320,177 +490,99 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
 
   Widget _buildScheduleCard(CleaningSchedule schedule) {
     final statusColor = _getStatusColor(schedule.status);
-    final isUpcoming = schedule.startTime.isAfter(DateTime.now());
+    final statusText = _getStatusText(schedule.status);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: statusColor.withValues(alpha: 0.3),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border(left: BorderSide(color: statusColor, width: 4)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: statusColor.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        _getStatusIcon(schedule.status),
-                        color: statusColor,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            schedule.classroom,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.access_time,
-                                size: 14,
-                                color: Colors.white.withValues(alpha: 0.6),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${_dateFormat.format(schedule.startTime)} at ${_timeFormat.format(schedule.startTime)}',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: statusColor.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: statusColor.withValues(alpha: 0.5),
-                        ),
-                      ),
-                      child: Text(
-                        schedule.status.name.toUpperCase(),
-                        style: TextStyle(
-                          color: statusColor,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    _buildInfoChip(
-                      Icons.timer,
-                      '${schedule.duration.inMinutes} min',
-                      const Color(0xFF38BDF8),
-                    ),
-                    const SizedBox(width: 8),
-                    if (isUpcoming)
-                      _buildInfoChip(
-                        Icons.event,
-                        _getTimeUntil(schedule.startTime),
-                        const Color(0xFF22C55E),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildActionButton(
-                        label: 'Edit',
-                        icon: Icons.edit,
-                        onPressed: () => _openForm(schedule: schedule),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF38BDF8), Color(0xFF0EA5E9)],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _buildActionButton(
-                        label: 'Delete',
-                        icon: Icons.delete,
-                        onPressed: () => _deleteSchedule(schedule.id),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoChip(IconData icon, String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+    return _buildGlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color, size: 14),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [statusColor, statusColor.withValues(alpha: 0.6)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  _getStatusIcon(schedule.status),
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      schedule.classroom,
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    Text(
+                      '${_dateFormat.format(schedule.startTime)} • ${_timeFormat.format(schedule.startTime)} (${schedule.duration.inMinutes} min)',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: statusColor.withValues(alpha: 0.5)),
+                ),
+                child: Text(
+                  statusText,
+                  style: GoogleFonts.poppins(
+                    color: statusColor,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildActionButton(
+                  icon: Icons.edit_outlined,
+                  label: 'Edit',
+                  onPressed: () => _openForm(schedule: schedule),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF38BDF8), Color(0xFF0EA5E9)],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildActionButton(
+                  icon: Icons.delete_outline,
+                  label: 'Delete',
+                  onPressed: () => _deleteSchedule(schedule.id),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -498,19 +590,19 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
   }
 
   Widget _buildActionButton({
-    required String label,
     required IconData icon,
+    required String label,
     required VoidCallback onPressed,
     required Gradient gradient,
   }) {
     return SizedBox(
-      height: 40,
+      height: 48,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           padding: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
           ),
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
@@ -518,25 +610,22 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
         child: Ink(
           decoration: BoxDecoration(
             gradient: gradient,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
           ),
-          child: Container(
-            alignment: Alignment.center,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: Colors.white, size: 16),
-                const SizedBox(width: 6),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                  ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: Colors.white, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -556,29 +645,30 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
     }
   }
 
+  String _getStatusText(CleaningStatus status) {
+    switch (status) {
+      case CleaningStatus.scheduled:
+        return 'SCHEDULED';
+      case CleaningStatus.inProgress:
+        return 'IN PROGRESS';
+      case CleaningStatus.completed:
+        return 'COMPLETED';
+      case CleaningStatus.canceled:
+        return 'CANCELED';
+    }
+  }
+
   IconData _getStatusIcon(CleaningStatus status) {
     switch (status) {
       case CleaningStatus.scheduled:
         return Icons.schedule;
       case CleaningStatus.inProgress:
-        return Icons.cleaning_services;
+        return Icons.play_circle_outline;
       case CleaningStatus.completed:
-        return Icons.check_circle;
+        return Icons.check_circle_outline;
       case CleaningStatus.canceled:
-        return Icons.cancel;
+        return Icons.cancel_outlined;
     }
-  }
-
-  String _getTimeUntil(DateTime dateTime) {
-    final difference = dateTime.difference(DateTime.now());
-    if (difference.inDays > 0) {
-      return 'in ${difference.inDays}d';
-    } else if (difference.inHours > 0) {
-      return 'in ${difference.inHours}h';
-    } else if (difference.inMinutes > 0) {
-      return 'in ${difference.inMinutes}m';
-    }
-    return 'soon';
   }
 }
 
@@ -592,200 +682,171 @@ class _ScheduleFormDialog extends StatefulWidget {
 }
 
 class _ScheduleFormDialogState extends State<_ScheduleFormDialog> {
-  final _formKey = GlobalKey<FormState>();
   late TextEditingController _classroomController;
-  late TextEditingController _dateController;
-  late TextEditingController _timeController;
-  late TextEditingController _durationController;
-  CleaningStatus _status = CleaningStatus.scheduled;
+  late DateTime _selectedDate;
+  late TimeOfDay _selectedTime;
+  late Duration _selectedDuration;
 
   @override
   void initState() {
     super.initState();
-    final s = widget.schedule;
-    _classroomController = TextEditingController(text: s?.classroom ?? '');
-    if (s != null) {
-      _dateController = TextEditingController(
-        text: DateFormat('yyyy-MM-dd').format(s.startTime),
-      );
-      _timeController = TextEditingController(
-        text: DateFormat('HH:mm').format(s.startTime),
-      );
-      _durationController = TextEditingController(
-        text: s.duration.inMinutes.toString(),
-      );
-      _status = s.status;
-    } else {
-      _dateController = TextEditingController();
-      _timeController = TextEditingController();
-      _durationController = TextEditingController(text: '45');
-    }
+    _classroomController = TextEditingController(
+      text: widget.schedule?.classroom ?? '',
+    );
+    _selectedDate = widget.schedule?.startTime ?? DateTime.now();
+    _selectedTime = TimeOfDay.fromDateTime(_selectedDate);
+    _selectedDuration =
+        widget.schedule?.duration ?? const Duration(minutes: 30);
   }
 
   @override
   void dispose() {
     _classroomController.dispose();
-    _dateController.dispose();
-    _timeController.dispose();
-    _durationController.dispose();
     super.dispose();
-  }
-
-  void _pickDate() async {
-    final now = DateTime.now();
-    final initial = widget.schedule?.startTime ?? now;
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: initial,
-      firstDate: now.subtract(const Duration(days: 365)),
-      lastDate: now.add(const Duration(days: 365)),
-    );
-    if (picked != null) {
-      _dateController.text = DateFormat('yyyy-MM-dd').format(picked);
-    }
-  }
-
-  void _pickTime() async {
-    final initial = TimeOfDay.fromDateTime(
-      widget.schedule?.startTime ?? DateTime.now(),
-    );
-    final picked = await showTimePicker(context: context, initialTime: initial);
-    if (picked != null && mounted) {
-      _timeController.text = picked.format(context);
-    }
-  }
-
-  void _submit() {
-    if (!(_formKey.currentState?.validate() ?? false)) {
-      return;
-    }
-
-    final dateText = _dateController.text;
-    final timeText = _timeController.text;
-    final durationMinutes = int.tryParse(_durationController.text) ?? 45;
-
-    final dateParts = dateText.split('-');
-
-    DateTime startTime;
-    if (dateParts.length == 3) {
-      final now = DateTime.now();
-      TimeOfDay timeOfDay;
-      try {
-        final parsed = TimeOfDay(
-          hour: int.parse(timeText.split(':')[0]),
-          minute: int.parse(timeText.split(':')[1]),
-        );
-        timeOfDay = parsed;
-      } catch (_) {
-        timeOfDay = TimeOfDay.fromDateTime(now);
-      }
-      startTime = DateTime(
-        int.parse(dateParts[0]),
-        int.parse(dateParts[1]),
-        int.parse(dateParts[2]),
-        timeOfDay.hour,
-        timeOfDay.minute,
-      );
-    } else {
-      startTime = DateTime.now();
-    }
-
-    final schedule = CleaningSchedule(
-      id:
-          widget.schedule?.id ??
-          DateTime.now().millisecondsSinceEpoch.toString(),
-      classroom: _classroomController.text,
-      startTime: startTime,
-      duration: Duration(minutes: durationMinutes),
-      status: _status,
-    );
-
-    Navigator.of(context).pop(schedule);
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.schedule == null ? 'Add Schedule' : 'Edit Schedule'),
-      content: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+      backgroundColor: const Color(0xFF0F172A),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: Text(
+        widget.schedule == null ? 'Create Schedule' : 'Edit Schedule',
+        style: GoogleFonts.poppins(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+          fontSize: 18,
+        ),
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _classroomController,
+            style: GoogleFonts.poppins(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: 'Classroom/Location',
+              hintStyle: GoogleFonts.poppins(color: Colors.white54),
+              filled: true,
+              fillColor: Colors.white.withValues(alpha: 0.1),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: Colors.white.withValues(alpha: 0.2),
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: Colors.white.withValues(alpha: 0.2),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
             children: [
-              TextFormField(
-                controller: _classroomController,
-                decoration: const InputDecoration(labelText: 'Classroom'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Enter classroom';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _dateController,
-                decoration: InputDecoration(
-                  labelText: 'Date (yyyy-MM-dd)',
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.calendar_today),
-                    onPressed: _pickDate,
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    final date = await showDatePicker(
+                      context: context,
+                      initialDate: _selectedDate,
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime.now().add(const Duration(days: 365)),
+                    );
+                    if (date != null) {
+                      setState(() => _selectedDate = date);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF22C55E),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Date',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Select date';
-                  }
-                  return null;
-                },
               ),
-              TextFormField(
-                controller: _timeController,
-                decoration: InputDecoration(
-                  labelText: 'Time (HH:mm)',
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.access_time),
-                    onPressed: _pickTime,
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    final time = await showTimePicker(
+                      context: context,
+                      initialTime: _selectedTime,
+                    );
+                    if (time != null) {
+                      setState(() => _selectedTime = time);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0EA5E9),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Time',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Select time';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _durationController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Duration (minutes)',
-                ),
-              ),
-              DropdownButtonFormField<CleaningStatus>(
-                initialValue: _status,
-                items: CleaningStatus.values
-                    .map((s) => DropdownMenuItem(value: s, child: Text(s.name)))
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      _status = value;
-                    });
-                  }
-                },
-                decoration: const InputDecoration(labelText: 'Status'),
               ),
             ],
           ),
-        ),
+        ],
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            'Cancel',
+            style: GoogleFonts.poppins(
+              color: Colors.white70,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
-        ElevatedButton(onPressed: _submit, child: const Text('Save')),
+        ElevatedButton(
+          onPressed: () {
+            final schedule = CleaningSchedule(
+              id: widget.schedule?.id ?? DateTime.now().toString(),
+              classroom: _classroomController.text,
+              startTime: DateTime(
+                _selectedDate.year,
+                _selectedDate.month,
+                _selectedDate.day,
+                _selectedTime.hour,
+                _selectedTime.minute,
+              ),
+              duration: _selectedDuration,
+              status: widget.schedule?.status ?? CleaningStatus.scheduled,
+            );
+            Navigator.pop(context, schedule);
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF22C55E),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: Text(
+            'Save',
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
       ],
     );
   }

@@ -22,21 +22,21 @@ class _MainShellState extends State<MainShell> {
   late final AuthService _authService;
 
   // Admin pages (all features)
-  final _adminPages = const [
-    HomeScreen(),
-    MonitoringScreen(),
-    SchedulesScreen(),
-    LogsScreen(),
-    NotificationsScreen(),
-    SettingsScreen(),
+  final _adminPages = [
+    const HomeScreen(),
+    const MonitoringScreen(),
+    const SchedulesScreen(),
+    const LogsScreen(),
+    const NotificationsScreen(),
+    const SettingsScreen(),
   ];
 
   // User pages (limited features)
-  final _userPages = const [
-    HomeScreen(),
-    MonitoringScreen(),
-    NotificationsScreen(),
-    SettingsScreen(),
+  final _userPages = [
+    const HomeScreen(),
+    const MonitoringScreen(),
+    const NotificationsScreen(),
+    const SettingsScreen(),
   ];
 
   @override

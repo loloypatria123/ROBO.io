@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:robofinal/models/robot_status.dart';
 import 'package:robofinal/services/mock_admin_service.dart';
 
@@ -9,8 +11,34 @@ class MonitoringScreen extends StatefulWidget {
   State<MonitoringScreen> createState() => _MonitoringScreenState();
 }
 
-class _MonitoringScreenState extends State<MonitoringScreen> {
-  RobotStatus _status = MockAdminService.instance.getRobotStatus();
+class _MonitoringScreenState extends State<MonitoringScreen>
+    with TickerProviderStateMixin {
+  late RobotStatus _status;
+  late AnimationController _fadeController;
+  late AnimationController _slideController;
+
+  @override
+  void initState() {
+    super.initState();
+    _status = MockAdminService.instance.getRobotStatus();
+
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    )..forward();
+
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    _slideController.dispose();
+    super.dispose();
+  }
 
   void _refresh() {
     setState(() {
@@ -34,586 +62,187 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
           _refresh();
         },
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           children: [
-            // Robot Status Overview Card
-            _buildGlassCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF22C55E), Color(0xFF0EA5E9)],
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.smart_toy,
-                          color: Colors.white,
-                          size: 28,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Robot Status',
-                            style: Theme.of(context).textTheme.titleLarge
-                                ?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                          ),
-                          Text(
-                            _getStatusText(_status.activity),
-                            style: TextStyle(
-                              color: _getStatusColor(_status.activity),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Spacer(),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _getStatusColor(
-                            _status.activity,
-                          ).withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: _getStatusColor(
-                              _status.activity,
-                            ).withValues(alpha: 0.5),
-                          ),
-                        ),
-                        child: Text(
-                          _getStatusText(_status.activity).toUpperCase(),
-                          style: TextStyle(
-                            color: _getStatusColor(_status.activity),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Metrics Row
-            Row(
-              children: [
-                // Battery Level
-                Expanded(
-                  child: _buildMetricCard(
-                    icon: Icons.battery_charging_full,
-                    title: 'Battery',
-                    value: '${_status.batteryLevel}%',
-                    progress: _status.batteryLevel / 100,
-                    color: _getBatteryColor(_status.batteryLevel),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                // Trash Level
-                Expanded(
-                  child: _buildMetricCard(
-                    icon: Icons.delete_outline,
-                    title: 'Trash Level',
-                    value: _status.trashFull ? 'Full' : 'OK',
-                    progress: _status.trashFull ? 1.0 : 0.35,
-                    color: _status.trashFull
-                        ? const Color(0xFFEF4444)
-                        : const Color(0xFF22C55E),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // Connection & Location Row
-            Row(
-              children: [
-                // Connection Status
-                Expanded(
-                  child: _buildInfoCard(
-                    icon: _status.connectionType == ConnectionType.wifi
-                        ? Icons.wifi
-                        : Icons.bluetooth,
-                    title: 'Connection',
-                    value: _status.connectionType.name.toUpperCase(),
-                    subtitle: _status.connectionStatus.name,
-                    color:
-                        _status.connectionStatus == ConnectionStatus.connected
-                        ? const Color(0xFF22C55E)
-                        : const Color(0xFFEF4444),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                // Current Location
-                Expanded(
-                  child: _buildInfoCard(
-                    icon: Icons.location_on,
-                    title: 'Location',
-                    value: _getLocationText(_status.location),
-                    subtitle: 'Current position',
-                    color: const Color(0xFF38BDF8),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Cleaning Progress
-            if (_status.activity == RobotActivity.cleaning)
-              _buildGlassCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Cleaning Progress',
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                        ),
-                        Text(
-                          '${(_status.cleaningProgress * 100).toInt()}%',
-                          style: const TextStyle(
-                            color: Color(0xFF22C55E),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: LinearProgressIndicator(
-                        value: _status.cleaningProgress,
-                        minHeight: 12,
-                        backgroundColor: Colors.white.withValues(alpha: 0.1),
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color(0xFF22C55E),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            if (_status.activity == RobotActivity.cleaning)
-              const SizedBox(height: 16),
-
-            // Robot Controls
-            _buildGlassCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF22C55E), Color(0xFF0EA5E9)],
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.settings_remote,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Robot Controls',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Main Control Buttons
-                  Text(
-                    'Cleaning Operations',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Colors.white70,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildControlButton(
-                          icon: Icons.play_arrow,
-                          label: 'Start',
-                          onPressed: () {},
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF22C55E), Color(0xFF16A34A)],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _buildControlButton(
-                          icon: Icons.pause,
-                          label: 'Pause',
-                          onPressed: () {},
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _buildControlButton(
-                          icon: Icons.stop,
-                          label: 'Stop',
-                          onPressed: () {},
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Navigation Controls
-                  Text(
-                    'Navigation',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Colors.white70,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildControlButton(
-                          icon: Icons.home,
-                          label: 'Return to Base',
-                          onPressed: () {},
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF38BDF8), Color(0xFF0EA5E9)],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _buildControlButton(
-                          icon: Icons.delete_sweep,
-                          label: 'Dispose Trash',
-                          onPressed: () {},
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Emergency Actions
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                      ),
-                      child: Ink(
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFDC2626), Color(0xFF991B1B)],
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFDC2626).withValues(alpha: 0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: const Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.emergency,
-                                color: Colors.white,
-                                size: 24,
-                              ),
-                              SizedBox(width: 12),
-                              Text(
-                                'EMERGENCY STOP',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Robot Monitoring Section
-            _buildGlassCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF22C55E), Color(0xFF0EA5E9)],
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.monitor_heart,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Robot Monitoring',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Live Movement Updates
-                  Text(
-                    'Live Movement',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Colors.white70,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.navigation,
-                            color: Color(0xFF38BDF8),
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _status.lastMovement,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                'Speed: ${_status.currentSpeed.toStringAsFixed(2)} m/s',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF22C55E), Color(0xFF16A34A)],
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Text(
-                            'LIVE',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Sensor Status
-                  Text(
-                    'Sensor Status',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Colors.white70,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Column(
-                    children: [
-                      _buildSensorCard(
-                        icon: Icons.sensors,
-                        label: 'Ultrasonic Sensor',
-                        value:
-                            '${_status.sensorData.ultrasonicDistance.toStringAsFixed(1)} cm',
-                        status: _status.sensorData.ultrasonicStatus,
-                      ),
-                      const SizedBox(height: 8),
-                      _buildSensorCard(
-                        icon: Icons.linear_scale,
-                        label: 'Line Sensor',
-                        value: _status.sensorData.lineDetected
-                            ? 'Line Detected'
-                            : 'No Line',
-                        status: _status.sensorData.lineStatus,
-                      ),
-                      const SizedBox(height: 8),
-                      _buildSensorCard(
-                        icon: Icons.delete,
-                        label: 'Trash Sensor',
-                        value: '${_status.sensorData.trashLevel}%',
-                        status: _status.sensorData.trashStatus,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Activity Timeline
-                  Text(
-                    'Activity Timeline',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Colors.white70,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildActivityTimeline(),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Quick Actions Panel
-            _buildGlassCard(
+            FadeTransition(
+              opacity: _fadeController,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Quick Actions',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    'Monitoring',
+                    style: GoogleFonts.poppins(
                       color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 32,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.5,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _buildActionButton(
-                        icon: Icons.refresh,
-                        label: 'Refresh Status',
-                        onPressed: _refresh,
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF38BDF8), Color(0xFF0EA5E9)],
-                        ),
-                      ),
-                      _buildActionButton(
-                        icon: Icons.map,
-                        label: 'View Map',
-                        onPressed: () {},
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF06B6D4), Color(0xFF0891B2)],
-                        ),
-                      ),
-                      _buildActionButton(
-                        icon: Icons.cleaning_services,
-                        label: 'Clean History',
-                        onPressed: () {},
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF10B981), Color(0xFF059669)],
-                        ),
-                      ),
-                      _buildActionButton(
-                        icon: Icons.settings,
-                        label: 'Settings',
-                        onPressed: () {},
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
-                        ),
-                      ),
-                    ],
+                  const SizedBox(height: 8),
+                  Text(
+                    'Real-time robot monitoring and control',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 0.3,
+                    ),
                   ),
                 ],
               ),
             ),
+            const SizedBox(height: 32),
+            SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 0.3),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: _slideController,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+              child: _buildStatusCard(),
+            ),
+            const SizedBox(height: 28),
+            SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 0.3),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: _slideController,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildMetricCard(
+                      icon: Icons.battery_charging_full,
+                      title: 'Battery',
+                      value: '${_status.batteryLevel}%',
+                      progress: _status.batteryLevel / 100,
+                      color: _getBatteryColor(_status.batteryLevel),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildMetricCard(
+                      icon: Icons.delete_outline,
+                      title: 'Trash Level',
+                      value: _status.trashFull ? 'Full' : 'OK',
+                      progress: _status.trashFull ? 1.0 : 0.35,
+                      color: _status.trashFull
+                          ? const Color(0xFFEF4444)
+                          : const Color(0xFF22C55E),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 0.3),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: _slideController,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildInfoCard(
+                      icon: _status.connectionType == ConnectionType.wifi
+                          ? Icons.wifi
+                          : Icons.bluetooth,
+                      title: 'Connection',
+                      value: _status.connectionType.name.toUpperCase(),
+                      subtitle: _status.connectionStatus.name,
+                      color:
+                          _status.connectionStatus == ConnectionStatus.connected
+                          ? const Color(0xFF22C55E)
+                          : const Color(0xFFEF4444),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildInfoCard(
+                      icon: Icons.location_on,
+                      title: 'Location',
+                      value: _getLocationText(_status.location),
+                      subtitle: 'Current position',
+                      color: const Color(0xFF38BDF8),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 28),
+            if (_status.activity == RobotActivity.cleaning)
+              SlideTransition(
+                position:
+                    Tween<Offset>(
+                      begin: const Offset(0, 0.3),
+                      end: Offset.zero,
+                    ).animate(
+                      CurvedAnimation(
+                        parent: _slideController,
+                        curve: Curves.easeOutCubic,
+                      ),
+                    ),
+                child: _buildProgressCard(),
+              ),
+            if (_status.activity == RobotActivity.cleaning)
+              const SizedBox(height: 28),
+            SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 0.3),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: _slideController,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+              child: _buildControlsCard(),
+            ),
+            const SizedBox(height: 28),
+            SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 0.3),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: _slideController,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+              child: _buildMonitoringCard(),
+            ),
+            const SizedBox(height: 28),
+            SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 0.3),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: _slideController,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+              child: _buildQuickActionsCard(),
+            ),
+            const SizedBox(height: 24),
           ],
         ),
       ),
@@ -639,6 +268,70 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
     );
   }
 
+  Widget _buildStatusCard() {
+    return _buildGlassCard(
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  _getStatusColor(_status.activity),
+                  _getStatusColor(_status.activity).withValues(alpha: 0.6),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.smart_toy, color: Colors.white, size: 28),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Robot Status',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Text(
+                  _getStatusText(_status.activity),
+                  style: GoogleFonts.poppins(
+                    color: _getStatusColor(_status.activity),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: _getStatusColor(_status.activity).withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: _getStatusColor(_status.activity).withValues(alpha: 0.5),
+              ),
+            ),
+            child: Text(
+              _getStatusText(_status.activity).toUpperCase(),
+              style: GoogleFonts.poppins(
+                color: _getStatusColor(_status.activity),
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildMetricCard({
     required IconData icon,
     required String title,
@@ -656,7 +349,7 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
               const SizedBox(width: 8),
               Text(
                 title,
-                style: const TextStyle(
+                style: GoogleFonts.poppins(
                   color: Colors.white70,
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -667,7 +360,7 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
           const SizedBox(height: 12),
           Text(
             value,
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               color: color,
               fontSize: 28,
               fontWeight: FontWeight.bold,
@@ -705,7 +398,7 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
               const SizedBox(width: 8),
               Text(
                 title,
-                style: const TextStyle(
+                style: GoogleFonts.poppins(
                   color: Colors.white70,
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
@@ -716,7 +409,7 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
           const SizedBox(height: 8),
           Text(
             value,
-            style: const TextStyle(
+            style: GoogleFonts.poppins(
               color: Colors.white,
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -724,12 +417,379 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
           ),
           Text(
             subtitle,
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               color: Colors.white.withValues(alpha: 0.5),
               fontSize: 11,
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildProgressCard() {
+    return _buildGlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Cleaning Progress',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Text(
+                '${(_status.cleaningProgress * 100).toInt()}%',
+                style: GoogleFonts.poppins(
+                  color: const Color(0xFF22C55E),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: LinearProgressIndicator(
+              value: _status.cleaningProgress,
+              minHeight: 12,
+              backgroundColor: Colors.white.withValues(alpha: 0.1),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Color(0xFF22C55E),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildControlsCard() {
+    return _buildGlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF22C55E), Color(0xFF0EA5E9)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.settings_remote,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Robot Controls',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Cleaning Operations',
+            style: GoogleFonts.poppins(
+              color: Colors.white70,
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildControlButton(
+                  icon: Icons.play_arrow,
+                  label: 'Start',
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF22C55E), Color(0xFF16A34A)],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildControlButton(
+                  icon: Icons.pause,
+                  label: 'Pause',
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildControlButton(
+                  icon: Icons.stop,
+                  label: 'Stop',
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Navigation',
+            style: GoogleFonts.poppins(
+              color: Colors.white70,
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildControlButton(
+                  icon: Icons.home,
+                  label: 'Return',
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF38BDF8), Color(0xFF0EA5E9)],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildControlButton(
+                  icon: Icons.delete_sweep,
+                  label: 'Dispose',
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMonitoringCard() {
+    return _buildGlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF22C55E), Color(0xFF0EA5E9)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.monitor_heart,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Robot Monitoring',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Live Movement',
+            style: GoogleFonts.poppins(
+              color: Colors.white70,
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.navigation,
+                    color: Color(0xFF38BDF8),
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _status.lastMovement,
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Speed: ${_status.currentSpeed.toStringAsFixed(2)} m/s',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionsCard() {
+    return _buildGlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Quick Actions',
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Center(
+            child: Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 16,
+              runSpacing: 16,
+              children: [
+                _buildActionButton(
+                  icon: Icons.refresh,
+                  label: 'Refresh',
+                  onPressed: _refresh,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF38BDF8), Color(0xFF0EA5E9)],
+                  ),
+                ),
+                _buildActionButton(
+                  icon: Icons.map,
+                  label: 'Map',
+                  onPressed: () {},
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF06B6D4), Color(0xFF0891B2)],
+                  ),
+                ),
+                _buildActionButton(
+                  icon: Icons.cleaning_services,
+                  label: 'History',
+                  onPressed: () {},
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF10B981), Color(0xFF059669)],
+                  ),
+                ),
+                _buildActionButton(
+                  icon: Icons.settings,
+                  label: 'Settings',
+                  onPressed: () {},
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildControlButton({
+    required IconData icon,
+    required String label,
+    required Gradient gradient,
+  }) {
+    return SizedBox(
+      width: 80,
+      height: 80,
+      child: ElevatedButton(
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+        ),
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: gradient,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(icon, color: Colors.white, size: 32),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      label,
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11,
+                        letterSpacing: 0.3,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -741,13 +801,14 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
     required Gradient gradient,
   }) {
     return SizedBox(
-      height: 48,
+      width: 90,
+      height: 90,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           padding: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(18),
           ),
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
@@ -755,75 +816,30 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
         child: Ink(
           decoration: BoxDecoration(
             gradient: gradient,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(18),
           ),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            alignment: Alignment.center,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon, color: Colors.white, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildControlButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onPressed,
-    required Gradient gradient,
-  }) {
-    return SizedBox(
-      height: 64,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-        ),
-        child: Ink(
-          decoration: BoxDecoration(
-            gradient: gradient,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Container(
-            alignment: Alignment.center,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Icon(icon, color: Colors.white, size: 28),
-                const SizedBox(height: 6),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
+                Icon(icon, color: Colors.white, size: 36),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      label,
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                        letterSpacing: 0.3,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
               ],
@@ -841,9 +857,9 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
       case RobotActivity.cleaning:
         return 'Cleaning';
       case RobotActivity.disposing:
-        return 'Disposing Trash';
+        return 'Disposing';
       case RobotActivity.returning:
-        return 'Returning to Base';
+        return 'Returning';
     }
   }
 
@@ -874,225 +890,6 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
         return 'Hallway';
       case RobotLocation.trashCan:
         return 'Trash Can';
-    }
-  }
-
-  Widget _buildSensorCard({
-    required IconData icon,
-    required String label,
-    required String value,
-    required SensorStatus status,
-  }) {
-    final statusColor = _getSensorStatusColor(status);
-    final statusText = _getSensorStatusText(status);
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: statusColor.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, color: statusColor, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: statusColor.withValues(alpha: 0.5)),
-            ),
-            child: Text(
-              statusText,
-              style: TextStyle(
-                color: statusColor,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActivityTimeline() {
-    final activities = [
-      {
-        'time': '2 min ago',
-        'action': 'Started cleaning',
-        'location': 'Classroom 301',
-        'icon': Icons.play_circle,
-        'color': const Color(0xFF22C55E),
-      },
-      {
-        'time': '15 min ago',
-        'action': 'Disposed trash',
-        'location': 'Main disposal unit',
-        'icon': Icons.delete_sweep,
-        'color': const Color(0xFF8B5CF6),
-      },
-      {
-        'time': '45 min ago',
-        'action': 'Completed cleaning',
-        'location': 'Hallway B',
-        'icon': Icons.check_circle,
-        'color': const Color(0xFF38BDF8),
-      },
-      {
-        'time': '1 hr ago',
-        'action': 'Battery charged',
-        'location': 'Charging station',
-        'icon': Icons.battery_charging_full,
-        'color': const Color(0xFF10B981),
-      },
-    ];
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: activities.asMap().entries.map((entry) {
-          final index = entry.key;
-          final activity = entry.value;
-          final isLast = index == activities.length - 1;
-
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          activity['color'] as Color,
-                          (activity['color'] as Color).withValues(alpha: 0.7),
-                        ],
-                      ),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      activity['icon'] as IconData,
-                      color: Colors.white,
-                      size: 16,
-                    ),
-                  ),
-                  if (!isLast)
-                    Container(
-                      width: 2,
-                      height: 40,
-                      margin: const EdgeInsets.symmetric(vertical: 4),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            (activity['color'] as Color).withValues(alpha: 0.5),
-                            Colors.white.withValues(alpha: 0.1),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(bottom: isLast ? 0 : 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        activity['action'] as String,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        activity['location'] as String,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.6),
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        activity['time'] as String,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.4),
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Color _getSensorStatusColor(SensorStatus status) {
-    switch (status) {
-      case SensorStatus.normal:
-        return const Color(0xFF22C55E);
-      case SensorStatus.warning:
-        return const Color(0xFFF59E0B);
-      case SensorStatus.error:
-        return const Color(0xFFEF4444);
-    }
-  }
-
-  String _getSensorStatusText(SensorStatus status) {
-    switch (status) {
-      case SensorStatus.normal:
-        return 'NORMAL';
-      case SensorStatus.warning:
-        return 'WARNING';
-      case SensorStatus.error:
-        return 'ERROR';
     }
   }
 }
