@@ -141,15 +141,15 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             color: _autoCleaningEnabled
-                                ? const Color(0xFF22C55E).withOpacity(0.2)
-                                : Colors.white.withOpacity(0.1),
+                                ? const Color(0xFF22C55E).withValues(alpha: 0.2)
+                                : Colors.white.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
                             Icons.auto_mode,
                             color: _autoCleaningEnabled
                                 ? const Color(0xFF22C55E)
-                                : Colors.white54,
+                                : Colors.white.withValues(alpha: 0.54),
                             size: 24,
                           ),
                         ),
@@ -169,7 +169,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                               Text(
                                 _autoCleaningEnabled ? 'Enabled' : 'Disabled',
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.6),
+                                  color: Colors.white.withValues(alpha: 0.6),
                                   fontSize: 13,
                                 ),
                               ),
@@ -183,10 +183,10 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                               _autoCleaningEnabled = value;
                             });
                           },
-                          activeColor: const Color(0xFF22C55E),
+                          activeThumbColor: const Color(0xFF22C55E),
                           activeTrackColor: const Color(
                             0xFF22C55E,
-                          ).withOpacity(0.3),
+                          ).withValues(alpha: 0.3),
                         ),
                       ],
                     ),
@@ -255,13 +255,13 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                           Icon(
                             Icons.event_busy,
                             size: 64,
-                            color: Colors.white.withOpacity(0.3),
+                            color: Colors.white.withValues(alpha: 0.3),
                           ),
                           const SizedBox(height: 16),
                           Text(
                             'No schedules yet',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.5),
+                              color: Colors.white.withValues(alpha: 0.5),
                               fontSize: 16,
                             ),
                           ),
@@ -269,7 +269,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                           Text(
                             'Tap the + button to add a schedule',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.3),
+                              color: Colors.white.withValues(alpha: 0.3),
                               fontSize: 14,
                             ),
                           ),
@@ -303,12 +303,12 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.06),
+        color: Colors.white.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.12)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -324,12 +324,15 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.06),
+        color: Colors.white.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: statusColor.withOpacity(0.3), width: 1.5),
+        border: Border.all(
+          color: statusColor.withValues(alpha: 0.3),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -351,7 +354,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.2),
+                        color: statusColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
@@ -379,13 +382,13 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                               Icon(
                                 Icons.access_time,
                                 size: 14,
-                                color: Colors.white.withOpacity(0.6),
+                                color: Colors.white.withValues(alpha: 0.6),
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 '${_dateFormat.format(schedule.startTime)} at ${_timeFormat.format(schedule.startTime)}',
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.6),
+                                  color: Colors.white.withValues(alpha: 0.6),
                                   fontSize: 13,
                                 ),
                               ),
@@ -400,9 +403,11 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.2),
+                        color: statusColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: statusColor.withOpacity(0.5)),
+                        border: Border.all(
+                          color: statusColor.withValues(alpha: 0.5),
+                        ),
                       ),
                       child: Text(
                         schedule.status.name.toUpperCase(),
@@ -470,9 +475,9 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
+        color: color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -645,7 +650,7 @@ class _ScheduleFormDialogState extends State<_ScheduleFormDialog> {
       widget.schedule?.startTime ?? DateTime.now(),
     );
     final picked = await showTimePicker(context: context, initialTime: initial);
-    if (picked != null) {
+    if (picked != null && mounted) {
       _timeController.text = picked.format(context);
     }
   }
@@ -758,7 +763,7 @@ class _ScheduleFormDialogState extends State<_ScheduleFormDialog> {
                 ),
               ),
               DropdownButtonFormField<CleaningStatus>(
-                value: _status,
+                initialValue: _status,
                 items: CleaningStatus.values
                     .map((s) => DropdownMenuItem(value: s, child: Text(s.name)))
                     .toList(),

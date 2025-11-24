@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:robofinal/screens/login_screen.dart';
+import 'package:robofinal/screens/password_reset_screen.dart';
 
-class VerificationScreen extends StatefulWidget {
+class ForgotPasswordVerificationScreen extends StatefulWidget {
   final String email;
-  final String correctOtp;
+  final String correctCode;
 
-  const VerificationScreen({
+  const ForgotPasswordVerificationScreen({
     super.key,
     required this.email,
-    required this.correctOtp,
+    required this.correctCode,
   });
 
   @override
-  State<VerificationScreen> createState() => _VerificationScreenState();
+  State<ForgotPasswordVerificationScreen> createState() =>
+      _ForgotPasswordVerificationScreenState();
 }
 
-class _VerificationScreenState extends State<VerificationScreen> {
+class _ForgotPasswordVerificationScreenState
+    extends State<ForgotPasswordVerificationScreen> {
   final List<TextEditingController> _controllers = List.generate(
     6,
     (_) => TextEditingController(),
@@ -24,6 +26,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
   String? _errorMessage;
   bool _isVerifying = false;
+  int _resendCountdown = 0;
 
   @override
   void dispose() {
@@ -55,11 +58,15 @@ class _VerificationScreenState extends State<VerificationScreen> {
     Future.delayed(const Duration(milliseconds: 800), () {
       if (!mounted) return;
 
-      if (enteredCode == widget.correctOtp) {
-        // Success - navigate to login screen
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-          (route) => false,
+      if (enteredCode == widget.correctCode) {
+        // Success - navigate to password reset screen
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => PasswordResetScreen(
+              email: widget.email,
+              resetCode: enteredCode,
+            ),
+          ),
         );
       } else {
         setState(() {
@@ -90,6 +97,33 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
     setState(() {
       _errorMessage = null;
+    });
+  }
+
+  void _resendCode() {
+    if (_resendCountdown > 0) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Reset code resent to your email!'),
+        backgroundColor: const Color(0xFF22C55E),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+
+    setState(() {
+      _resendCountdown = 60;
+    });
+
+    // Countdown timer
+    Future.delayed(const Duration(seconds: 1), () {
+      if (mounted && _resendCountdown > 0) {
+        setState(() {
+          _resendCountdown--;
+        });
+        _resendCode();
+      }
     });
   }
 
@@ -157,14 +191,16 @@ class _VerificationScreenState extends State<VerificationScreen> {
                               ],
                             ),
                             child: const Icon(
-                              Icons.mark_email_read_rounded,
+                              Icons.mail_outline_rounded,
                               color: Colors.white,
                               size: 50,
                             ),
                           ),
                           const SizedBox(height: 32),
+
+                          // Title
                           Text(
-                            'Verify Your Email',
+                            'Verify Reset Code',
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.headlineMedium
                                 ?.copyWith(
@@ -173,6 +209,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
                                 ),
                           ),
                           const SizedBox(height: 12),
+
+                          // Description
                           Text(
                             'We sent a 6-digit code to',
                             textAlign: TextAlign.center,
@@ -204,6 +242,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                             }),
                           ),
 
+                          // Error Message
                           if (_errorMessage != null) ...[
                             const SizedBox(height: 16),
                             Container(
@@ -306,32 +345,69 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
                           const SizedBox(height: 24),
 
-                          // Resend Code
+                          // Resend Code Button
                           TextButton.icon(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: const Text(
-                                    'Verification code resent!',
-                                  ),
-                                  backgroundColor: const Color(0xFF22C55E),
-                                  behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                              );
-                            },
-                            icon: const Icon(
+                            onPressed: _resendCountdown > 0
+                                ? null
+                                : _resendCode,
+                            icon: Icon(
                               Icons.refresh,
-                              color: Color(0xFF38BDF8),
+                              color: _resendCountdown > 0
+                                  ? Colors.grey
+                                  : const Color(0xFF38BDF8),
                             ),
-                            label: const Text(
-                              'Resend Code',
+                            label: Text(
+                              _resendCountdown > 0
+                                  ? 'Resend Code in ${_resendCountdown}s'
+                                  : 'Resend Code',
                               style: TextStyle(
-                                color: Color(0xFF38BDF8),
+                                color: _resendCountdown > 0
+                                    ? Colors.grey
+                                    : const Color(0xFF38BDF8),
                                 fontWeight: FontWeight.w600,
                               ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // Info Box
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(
+                                0xFF38BDF8,
+                              ).withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(
+                                  0xFF38BDF8,
+                                ).withValues(alpha: 0.2),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.info_outline,
+                                  color: const Color(
+                                    0xFF38BDF8,
+                                  ).withValues(alpha: 0.7),
+                                  size: 18,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'This code expires in 15 minutes. If you don\'t see the email, check your spam folder.',
+                                    style: TextStyle(
+                                      color: const Color(
+                                        0xFF38BDF8,
+                                      ).withValues(alpha: 0.7),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -388,7 +464,6 @@ class _VerificationScreenState extends State<VerificationScreen> {
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         onChanged: (value) => _onChanged(value, index),
         onTap: () {
-          // Clear the field when tapped for easier editing
           _controllers[index].selection = TextSelection(
             baseOffset: 0,
             extentOffset: _controllers[index].text.length,

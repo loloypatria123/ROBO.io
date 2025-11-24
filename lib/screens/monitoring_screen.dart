@@ -88,12 +88,12 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
                         decoration: BoxDecoration(
                           color: _getStatusColor(
                             _status.activity,
-                          ).withOpacity(0.2),
+                          ).withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                             color: _getStatusColor(
                               _status.activity,
-                            ).withOpacity(0.5),
+                            ).withValues(alpha: 0.5),
                           ),
                         ),
                         child: Text(
@@ -208,7 +208,7 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
                       child: LinearProgressIndicator(
                         value: _status.cleaningProgress,
                         minHeight: 12,
-                        backgroundColor: Colors.white.withOpacity(0.1),
+                        backgroundColor: Colors.white.withValues(alpha: 0.1),
                         valueColor: const AlwaysStoppedAnimation<Color>(
                           Color(0xFF22C55E),
                         ),
@@ -358,7 +358,7 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFDC2626).withOpacity(0.3),
+                              color: const Color(0xFFDC2626).withValues(alpha: 0.3),
                               blurRadius: 12,
                               offset: const Offset(0, 4),
                             ),
@@ -439,10 +439,10 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: const Color(0xFF38BDF8).withOpacity(0.3),
+                        color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
                       ),
                     ),
                     child: Row(
@@ -450,7 +450,7 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF38BDF8).withOpacity(0.2),
+                            color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -475,7 +475,7 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
                               Text(
                                 'Speed: ${_status.currentSpeed.toStringAsFixed(2)} m/s',
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.6),
+                                  color: Colors.white.withValues(alpha: 0.6),
                                   fontSize: 13,
                                 ),
                               ),
@@ -624,12 +624,12 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.06),
+        color: Colors.white.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.12)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -679,7 +679,7 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 6,
-              backgroundColor: Colors.white.withOpacity(0.1),
+              backgroundColor: Colors.white.withValues(alpha: 0.1),
               valueColor: AlwaysStoppedAnimation<Color>(color),
             ),
           ),
@@ -725,7 +725,7 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
           Text(
             subtitle,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
               fontSize: 11,
             ),
           ),
@@ -805,7 +805,7 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -889,16 +889,16 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: statusColor.withOpacity(0.3)),
+        border: Border.all(color: statusColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.2),
+              color: statusColor.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: statusColor, size: 20),
@@ -911,7 +911,7 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
                 Text(
                   label,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 12,
                   ),
                 ),
@@ -930,9 +930,9 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.2),
+              color: statusColor.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: statusColor.withOpacity(0.5)),
+              border: Border.all(color: statusColor.withValues(alpha: 0.5)),
             ),
             child: Text(
               statusText,
@@ -983,7 +983,7 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -1003,7 +1003,7 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
                       gradient: LinearGradient(
                         colors: [
                           activity['color'] as Color,
-                          (activity['color'] as Color).withOpacity(0.7),
+                          (activity['color'] as Color).withValues(alpha: 0.7),
                         ],
                       ),
                       shape: BoxShape.circle,
@@ -1024,8 +1024,8 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            (activity['color'] as Color).withOpacity(0.5),
-                            Colors.white.withOpacity(0.1),
+                            (activity['color'] as Color).withValues(alpha: 0.5),
+                            Colors.white.withValues(alpha: 0.1),
                           ],
                         ),
                       ),
@@ -1051,7 +1051,7 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
                       Text(
                         activity['location'] as String,
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withValues(alpha: 0.6),
                           fontSize: 12,
                         ),
                       ),
@@ -1059,7 +1059,7 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
                       Text(
                         activity['time'] as String,
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.4),
+                          color: Colors.white.withValues(alpha: 0.4),
                           fontSize: 11,
                         ),
                       ),

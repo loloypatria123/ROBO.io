@@ -100,13 +100,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         Icon(
                           Icons.notifications_none,
                           size: 64,
-                          color: Colors.white.withOpacity(0.3),
+                          color: Colors.white.withValues(alpha: 0.3),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'No notifications',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.5),
+                            color: Colors.white.withValues(alpha: 0.5),
                             fontSize: 16,
                           ),
                         ),
@@ -155,12 +155,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   colors: [Color(0xFF22C55E), Color(0xFF0EA5E9)],
                 )
               : null,
-          color: isSelected ? null : Colors.white.withOpacity(0.06),
+          color: isSelected ? null : Colors.white.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
                 ? Colors.transparent
-                : Colors.white.withOpacity(0.2),
+                : Colors.white.withValues(alpha: 0.2),
           ),
         ),
         child: Row(
@@ -179,8 +179,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? Colors.white.withOpacity(0.3)
-                    : Colors.white.withOpacity(0.1),
+                    ? Colors.white.withValues(alpha: 0.3)
+                    : Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
@@ -204,15 +204,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.06),
+        color: Colors.white.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: notificationColor.withOpacity(0.3),
+          color: notificationColor.withValues(alpha: 0.3),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -237,7 +237,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: notificationColor.withOpacity(0.2),
+                        color: notificationColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(icon, color: notificationColor, size: 24),
@@ -268,7 +268,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                   decoration: BoxDecoration(
                                     color: const Color(
                                       0xFFEF4444,
-                                    ).withOpacity(0.2),
+                                    ).withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
                                       color: const Color(0xFFEF4444),
@@ -290,7 +290,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           Text(
                             alert.message,
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
+                              color: Colors.white.withValues(alpha: 0.8),
                               fontSize: 14,
                               height: 1.4,
                             ),
@@ -301,13 +301,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               Icon(
                                 Icons.access_time,
                                 size: 14,
-                                color: Colors.white.withOpacity(0.5),
+                                color: Colors.white.withValues(alpha: 0.5),
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 formatter.format(alert.timestamp),
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.5),
+                                  color: Colors.white.withValues(alpha: 0.5),
                                   fontSize: 12,
                                 ),
                               ),

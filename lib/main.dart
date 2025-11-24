@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:robofinal/screens/welcome_screen.dart';
+import 'package:robofinal/screens/splash_screen.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
         textTheme: GoogleFonts.poppinsTextTheme(),
       ),
       debugShowCheckedModeBanner: false,
-      home: const WelcomeScreen(),
+      home: const SplashScreen(),
     );
   }
 }

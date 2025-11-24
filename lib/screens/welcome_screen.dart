@@ -93,7 +93,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     decoration: BoxDecoration(
                       color: isActive
                           ? const Color(0xFF22C55E)
-                          : Colors.white.withOpacity(0.3),
+                          : Colors.white.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(8),
                     ),
                   );
@@ -498,10 +498,10 @@ class _RobotIllustration extends StatelessWidget {
               width: 260 * scaleFactor,
               height: 120 * scaleFactor,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(16 * scaleFactor),
                 border: Border.all(
-                  color: const Color(0xFF38BDF8).withOpacity(0.3),
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
                   width: 2,
                 ),
               ),
@@ -548,7 +548,7 @@ class _RobotIllustration extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16 * scaleFactor),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF22C55E).withOpacity(0.5),
+                        color: const Color(0xFF22C55E).withValues(alpha: 0.5),
                         blurRadius: 20 * scaleFactor,
                         spreadRadius: 5 * scaleFactor,
                       ),
@@ -566,10 +566,10 @@ class _RobotIllustration extends StatelessWidget {
                   width: 80 * scaleFactor,
                   height: 60 * scaleFactor,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12 * scaleFactor),
                     border: Border.all(
-                      color: const Color(0xFF38BDF8).withOpacity(0.5),
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.5),
                       width: 2,
                     ),
                   ),
@@ -614,7 +614,7 @@ class _CleaningIllustration extends StatelessWidget {
             child: Container(
               height: 120,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: CustomPaint(painter: _PathPainter(progress: progress)),
@@ -671,10 +671,10 @@ class _NotificationIllustration extends StatelessWidget {
               width: phoneWidth,
               height: phoneHeight,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(24 * scaleFactor),
                 border: Border.all(
-                  color: const Color(0xFF38BDF8).withOpacity(0.5),
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.5),
                   width: 3,
                 ),
               ),
@@ -685,7 +685,7 @@ class _NotificationIllustration extends StatelessWidget {
                     width: 50 * scaleFactor,
                     height: 4 * scaleFactor,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.3),
+                      color: Colors.white.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),
@@ -770,10 +770,10 @@ class _PermissionsIllustration extends StatelessWidget {
               width: phoneWidth,
               height: phoneHeight,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(24 * scaleFactor),
                 border: Border.all(
-                  color: const Color(0xFF38BDF8).withOpacity(0.5),
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.5),
                   width: 3,
                 ),
               ),
@@ -820,7 +820,7 @@ class _PermissionsIllustration extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10 * scaleFactor),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF22C55E).withOpacity(0.4),
+                        color: const Color(0xFF22C55E).withValues(alpha: 0.4),
                         blurRadius: 12 * scaleFactor,
                       ),
                     ],
@@ -836,7 +836,7 @@ class _PermissionsIllustration extends StatelessWidget {
                   width: 50 * scaleFactor,
                   height: 35 * scaleFactor,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6 * scaleFactor),
                   ),
                 ),
@@ -863,7 +863,7 @@ class _Wheel extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: const Color(0xFF0EA5E9),
-        border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.5), width: 2),
       ),
     );
   }
@@ -880,7 +880,7 @@ class _ClassroomItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Icon(
       icon,
-      color: Colors.white.withOpacity(opacity),
+      color: Colors.white.withValues(alpha: opacity),
       size: 32 * scale,
     );
   }
@@ -903,7 +903,7 @@ class _MiniRobot extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF22C55E).withOpacity(0.5),
+            color: const Color(0xFF22C55E).withValues(alpha: 0.5),
             blurRadius: 15,
             spreadRadius: 2,
           ),
@@ -922,7 +922,7 @@ class _PathPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF22C55E).withOpacity(0.3)
+      ..color = const Color(0xFF22C55E).withValues(alpha: 0.3)
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -950,19 +950,19 @@ class _TrashIndicator extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: filled
-            ? const Color(0xFF22C55E).withOpacity(0.2)
-            : Colors.white.withOpacity(0.1),
+            ? const Color(0xFF22C55E).withValues(alpha: 0.2)
+            : Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: filled
               ? const Color(0xFF22C55E)
-              : Colors.white.withOpacity(0.3),
+              : Colors.white.withValues(alpha: 0.3),
           width: 2,
         ),
       ),
       child: Icon(
         Icons.delete_outline,
-        color: filled ? const Color(0xFF22C55E) : Colors.white.withOpacity(0.5),
+        color: filled ? const Color(0xFF22C55E) : Colors.white.withValues(alpha: 0.5),
         size: 24,
       ),
     );
@@ -1023,10 +1023,10 @@ class _NotificationCard extends StatelessWidget {
         margin: EdgeInsets.symmetric(horizontal: 10 * scale),
         padding: EdgeInsets.all(10 * scale),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10 * scale),
           border: Border.all(
-            color: const Color(0xFF22C55E).withOpacity(0.3),
+            color: const Color(0xFF22C55E).withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -1035,7 +1035,7 @@ class _NotificationCard extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(6 * scale),
               decoration: BoxDecoration(
-                color: const Color(0xFF22C55E).withOpacity(0.2),
+                color: const Color(0xFF22C55E).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(6 * scale),
               ),
               child: Icon(
@@ -1141,7 +1141,7 @@ class _PermissionIcon extends StatelessWidget {
             borderRadius: BorderRadius.circular(12 * scale),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF22C55E).withOpacity(0.3 + glow * 0.4),
+                color: const Color(0xFF22C55E).withValues(alpha: 0.3 + glow * 0.4),
                 blurRadius: (12 + glow * 8) * scale,
                 spreadRadius: 2 * scale,
               ),
